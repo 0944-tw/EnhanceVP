@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         vPMod
-// @namespace    http://tampermonkey.net/
+// @name         Enhance VP
+// @namespace    https://github.com/ImLoadingUuU/EnhanceVP
 // @version      2023-12-31
-// @description  try to take over the world!
+// @description  Enhance VP 
 // @author       You
 // @match        *://cpanel.infinityfree.com/panel/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=infinityfree.com
@@ -95,6 +95,33 @@
       xhr.send();
     });
   }
+  // vPanel Functions
+  let removeCname =async (domain) => {
+  let page= await getPage(`/panel/indexpl.php?option=cnamerecords&ttt=${token}`)
+  let jsons = tableToJson(page.querySelectorAll("#sql_db_tbl")[1])
+  for (let i =0; i < jsons.length; i++) {
+    let row = jsons[i]
+    console.log(row)
+    if (row.cnamerecord == domain) {
+      let rowElement = page.querySelectorAll("#sql_db_tbl")[1].getElementsByTagName("tr")[i+1]
+      let btn = rowElement.querySelector(".btn").href
+      await getPage(btn)
+       
+     
+      return true
+    } else {
+      continue
+    }
+  }
+  }
+  let addCname = async(domain,destination) => {
+   let xhr = new XMLHttpRequest();
+   xhr.open("POST","modules-new/cnamerecords/add.php")
+    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
+    let domainName = domain.slice(0,-1)
+    domainName = domainName.split('.').slice(1).join(".")
+    xhr.send(`source=${domain.split(".")[0]}&d_name=${domainName}&destination=${destination}&B1=Add`)
+  }
   //
   console.log("Enhance vP 1.0");
   let titlePrefix = "cPanel - ";
@@ -125,13 +152,13 @@
   };
   document.title = titlePrefix + (titles[document.title] || document.title);
   let navbars = document.getElementsByClassName("navbar-header")[0];
-
   document
     .getElementById("btnSideBarToggle")
     .setAttribute("data-toggle", "collapse");
   document
     .getElementById("btnSideBarToggle")
     .setAttribute("data-target", "#navbar");
+    //
   let navbarMod = `<div id="navbar" class="collapse navbar-collapse" aria-expanded="true"   id="navbar">
               <ul class="nav navbar-nav">
                 <li class=""><a href="/panel/indexpl.php?"></a></li>
@@ -263,9 +290,30 @@ Find out more about Premium Hosting today!
 
 
          </tbody></table>
-
+         <div class="modal fade" id="editrecordmodal" tabindex="-1" role="dialog">
+         <div class="modal-dialog" role="document">
+           <div class="modal-content">
+             <div class="modal-header">
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+               <h4 class="modal-title">Edit DNS Record</h4>
+             </div>
+             <div class="modal-body" id="modalBody">
+               <p>Queencard,Im hot</p>
+             </div>
+             <div class="modal-footer">
+               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+               <button type="button" class="btn btn-primary" id="applyDns">Apply</button>
+             </div>
+           </div><!-- /.modal-content -->
+         </div><!-- /.modal-dialog -->
+       </div>
         `;
       let records = [];
+      let currentlyEditInfo = {
+        type: "",
+        name: "",
+        value: "",
+      }
       let spfRecordHtml = await getPage(
         `/panel/indexpl.php?option=spfrecords&ttt=${token}`
       );
@@ -309,32 +357,62 @@ Find out more about Premium Hosting today!
         `
         records.push(row);
       }
-      window.editdns = function(type) {
-        console.log(type);
+      window.editdns = function(type,name,value) {
+        $("#editrecordmodal").modal("show")
+        console.log(type)
+        currentlyEditInfo.type = type;
+        currentlyEditInfo.name = name;
+        currentlyEditInfo.value = value;
+        if (type == "CNAME") {
+          $("#modalBody").html(`
+          <div class="form-group">
+          <label for="recipient-name" class="control-label">${name} New Record:</label>
+          <input type="text" class="form-control" placeholder='${value}' id="newValue">
+        </div>
+          `)
+        }
+      }
+      window.removedns = function(type,domain) {
+      
+        if (type == "CNAME") {
+          console.log(`Remove CNAME ${domain} `)
+          removeCname(domain)
+        }
       }
       document.getElementById("dnsLoadingText").innerHTML = `Loading DNS Records.. Loaded ${records.length} DNS Records`;
+      document.getElementById("applyDns").onclick = async function() {
+        console.log("Apply DNS")
+        if( currentlyEditInfo.type == "CNAME") {
+          await removeCname(currentlyEditInfo.name)
+          await addCname(currentlyEditInfo.name,document.getElementById("newValue").value)
+        }
+      }
       let table = document.getElementById("dns_lists")
       for (let i =0; i < records.length; i++) {
        // add item to table
+       let recordType =  records[i].type.toUpperCase();
+       let name = records[i].domain || records[i].cnamerecord;
+        
        let record = records[i];
-        let row =document.createElement("tr");
+       let value =  record.html || record.destination || record.mxrecord || record.currentspfdata; 
+       let row =document.createElement("tr");
         let ttl = document.createElement("td");
-        let name = document.createElement("td");
-        let value = document.createElement("td");
+        let nameTd = document.createElement("td");
+        let valueTd = document.createElement("td");
         let type = document.createElement("td");
         let action = document.createElement("td");
-        row.appendChild(name);
+        row.appendChild(nameTd);
         row.appendChild(ttl);
         row.appendChild(type);
-        row.appendChild(value);
+        row.appendChild(valueTd);
         row.appendChild(action);
         ttl.innerText = "14400"
-        name.innerHTML = record.domain || record.cnamerecord;
-        value.innerHTML = record.html || record.destination || record.mxrecord || record.currentspfdata;
+        nameTd.innerHTML = record.domain || record.cnamerecord;
+        valueTd.innerHTML = value;
         type.innerHTML = records[i].type.toUpperCase();
         action.innerHTML = `
-        <div class="btn btn-primary btn-outline" onclick="window.editdns('${type}')">Edit</div>
-        <div class="btn btn-danger btn-outline" onclick="window.editdns('${type}')">Delete</div>
+        <div class="btn btn-primary btn-outline" onclick="window.editdns('${recordType}','${name}','${value}')">Edit</div>
+        <div class="btn btn-danger btn-outline" onclick="window.removedns('${recordType}','${name}')">Delete</div>
         `
         table.querySelector("tbody").appendChild(row);
       }
