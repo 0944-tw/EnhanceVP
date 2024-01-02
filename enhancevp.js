@@ -49,6 +49,12 @@
     bootstrap.src =
       "https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js";
     document.head.appendChild(bootstrap);
+    await waitLoad(bootstrap);
+    let loadvPc = document.createElement("script");
+    loadvPc.src =
+      "https://cdn.jsdelivr.net/gh/ImLoadingUuU/EnhanceVP@main/vPclient.js";
+    document.head.appendChild(loadvPc);
+    await waitLoad(loadvPc);
   } else {
     console.log("JQuery Exists");
   }
