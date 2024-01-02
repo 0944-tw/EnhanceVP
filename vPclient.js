@@ -192,3 +192,9 @@ let mx = {
           }
     }
 };
+
+window.vpapi = {
+    cname,
+    spf,
+    mx
+}
