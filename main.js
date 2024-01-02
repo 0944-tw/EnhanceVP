@@ -20,4 +20,4 @@ function loadJS(FILE_URL, async = true) {
 console.log("Enhance VP Loader")
 console.log("EnhanceVP By MeTooIDK, MIT License. Please Credit In Commercial Use")
 console.log("DO NOT REMOVE CREDIT")
-loadJS("./enhanceVp.js")
+loadJS("enhanceVp.js")
