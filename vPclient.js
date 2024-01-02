@@ -194,6 +194,7 @@ let mx = {
             `
             records.push(row);
           }
+          return records;
     }
 };
 

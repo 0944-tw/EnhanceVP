@@ -324,20 +324,21 @@ Find out more about Premium Hosting today!
         value: "",
       }
        
-      let spfrecords = vpapi.spf.list();
+      let spfrecords =await vpapi.spf.list();
       for (let i = 1; i < spfrecords.length; i++) {
         records.push(spfrecords[i])
       }
-      let mxrecords = vpapi.mx.list();
+      let mxrecords = await vpapi.mx.list();
+      console.log(mxrecords)
       for (let i = 1; i < mxrecords.length; i++) {
 
         records.push(mxrecords[i])
       }
-      let cnamerecords = vpapi.cname.list();
+      let cnamerecords = await vpapi.cname.list();
       for (let i = 1; i < cnamerecords.length; i++) {
         records.push(cnamerecords[i])
       }
-      
+      console.log(records)
       window.editdns = function(type,name,value) {
         $("#editrecordmodal").modal("show")
         console.log(type)
