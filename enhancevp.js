@@ -52,7 +52,7 @@
     await waitLoad(bootstrap);
     let loadvPc = document.createElement("script");
     loadvPc.src =
-      "https://cdn.jsdelivr.net/gh/ImLoadingUuU/EnhanceVP@main/vPclient.js";
+      "https://raw.rawgit.net/ImLoadingUuU/EnhanceVP/main/vPclient.js";
     document.head.appendChild(loadvPc);
     await waitLoad(loadvPc);
   } else {
