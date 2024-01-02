@@ -159,6 +159,9 @@ let spf = {
   },
   list: async () => {
     let records = [];
+    let spfRecordHtml = await getPage(
+        `/panel/indexpl.php?option=spfrecords&ttt=${token}`
+      );
     let spfRecordTable = spfRecordHtml.querySelectorAll("#sql_db_tbl")[1];
     let spfJson = tableToJson(spfRecordTable);
 
