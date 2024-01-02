@@ -102,60 +102,7 @@
     });
   }
   // vPanel Functions
-  let removeCname =async (domain) => {
-  let page= await getPage(`/panel/indexpl.php?option=cnamerecords&ttt=${token}`)
-  let jsons = tableToJson(page.querySelectorAll("#sql_db_tbl")[1])
-  for (let i =0; i < jsons.length; i++) {
-    let row = jsons[i]
-    console.log(row)
-    if (row.cnamerecord == domain) {
-      let rowElement = page.querySelectorAll("#sql_db_tbl")[1].getElementsByTagName("tr")[i+1]
-      let btn = rowElement.querySelector(".btn").href
-      await getPage(btn)
-       
-     
-      return true
-    } else {
-      continue
-    }
-  }
-  }
-  let addCname = async(domain,destination) => {
-   let xhr = new XMLHttpRequest();
-   xhr.open("POST","modules-new/cnamerecords/add.php")
-    xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
-    let domainName = domain.slice(0,-1)
-    domainName = domainName.split('.').slice(1).join(".")
-    xhr.send(`source=${domain.split(".")[0]}&d_name=${domainName}&destination=${destination}&B1=Add`)
-  }
-  let getSpfDomains = async() => {
-    let page = await getPage(`/panel/indexpl.php?option=spfrecords&ttt=${token}`)
-    let domains = []
-    for (let i = 0; i< page.getElementsByName("d_name")[0].options.length; i++) {
-      let option = page.getElementsByName("d_name")[0].options[i]
-      domains.push(option.value)
-    }
-    return domains
-  }
-  let addSpf = async(domain,source) => {
-    return new Promise((resolve) => {
-      let xhr = new XMLHttpRequest();
-      xhr.open("POST","modules-new/spfrecords/add.php")
-       xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
-        xhr.onload = () => {
-          if (xhr.responseText.includes("alert alert-danger")) {
-            resolve(false)
-          } else {
-            resolve(true)
-          }
-        }
-       xhr.send(new URLSearchParams({
-        Data: source,
-        d_name: domain,
-        B1: "Add" 
-      }).toString())
-    })
-  }
+ 
   // 
   console.log("Enhance vP 1.0");
   let titlePrefix = "cPanel - ";
@@ -376,49 +323,21 @@ Find out more about Premium Hosting today!
         name: "",
         value: "",
       }
-      let spfRecordHtml = await getPage(
-        `/panel/indexpl.php?option=spfrecords&ttt=${token}`
-      );
-      let spfRecordTable = spfRecordHtml.querySelectorAll("#sql_db_tbl")[1];
-      let spfJson = tableToJson(spfRecordTable);
-      console.log("SPF:");
-      console.log(spfJson);
-      for (let i = 1; i < spfJson.length; i++) {
-        var row = spfJson[i];
-        if (row == {}) continue;
-        console.log(row);
-        row["type"] = "spf";
-        records.push(row);
+       
+      let spfrecords = vpapi.spf.list();
+      for (let i = 1; i < spfrecords.length; i++) {
+        records.push(spfrecords[i])
       }
+      let mxrecords = vpapi.mx.list();
+      for (let i = 1; i < mxrecords.length; i++) {
 
-      let cnameHtml = await getPage(
-        `/panel/indexpl.php?option=cnamerecords&ttt=${token}`
-      );
-      let cnameRecordTable = cnameHtml.querySelectorAll("#sql_db_tbl")[1];
-      let cnameHtmlJson = tableToJson(cnameRecordTable);
-      for (let i = 1; i < cnameHtmlJson.length; i++) {
-        var row = cnameHtmlJson[i];
-        if (row == {}) continue;
-        console.log(row);
-        row["type"] = "cname";
-        records.push(row);
+        records.push(mxrecords[i])
       }
-      let mxh5 = await getPage(
-        `/panel/indexpl.php?option=mxrecords&ttt=${token}`
-      );
-      let mxh5table = mxh5.querySelectorAll("#sql_db_tbl")[1];
-      let mxh5tableJson = tableToJson(mxh5table);
-      for (let i = 1; i < mxh5tableJson.length; i++) {
-        var row = mxh5tableJson[i];
-        if (row == {}) continue;
-        console.log(row);
-        row["type"] = "mx";
-        row["html"] = `
-        <b>Priority</b>: ${row.priority} <br>
-        <b>Destination</b>: ${row.mxrecord}
-        `
-        records.push(row);
+      let cnamerecords = vpapi.cname.list();
+      for (let i = 1; i < cnamerecords.length; i++) {
+        records.push(cnamerecords[i])
       }
+      
       window.editdns = function(type,name,value) {
         $("#editrecordmodal").modal("show")
         console.log(type)
@@ -438,7 +357,7 @@ Find out more about Premium Hosting today!
       
         if (type == "CNAME") {
           console.log(`Remove CNAME ${domain} `)
-          removeCname(domain)
+          vpapi.cname.remove(domain)
         }
       }
       window.adddns =async function(type) {
@@ -456,7 +375,7 @@ Find out more about Premium Hosting today!
          </div>
          `)
         } else if (type == "SPF") {
-         let data= await getSpfDomains()
+         let data= await vpapi.spf.domains()
           console.log(data)
           currentlyAddInfo.type = type;
           $("#recordModalBody").html(`
@@ -502,9 +421,9 @@ Find out more about Premium Hosting today!
       document.getElementById("ModalAddRecord").onclick = async function(){
         $("#ModalAddRecord").attr("disabled",true)
        if(currentlyAddInfo.type == "CNAME") {
-           await addCname($("#source").val() + ".",$("#destination").val())
+           await vpapi.cname.add($("#source").val() + ".",$("#destination").val())
        }else if (currentlyAddInfo.type == "SPF") {
-       let res = await  addSpf($("#domain").val(),$("#source").val())
+       let res = await  vpapi.spf.add($("#domain").val(),$("#source").val())
        if (res) {
          window.location.reload()
        } else {
