@@ -122,7 +122,35 @@
     domainName = domainName.split('.').slice(1).join(".")
     xhr.send(`source=${domain.split(".")[0]}&d_name=${domainName}&destination=${destination}&B1=Add`)
   }
-  //
+  let getSpfDomains = async() => {
+    let page = await getPage(`/panel/indexpl.php?option=spfrecords&ttt=${token}`)
+    let domains = []
+    for (let i = 0; i< page.getElementsByName("d_name")[0].options.length; i++) {
+      let option = page.getElementsByName("d_name")[0].options[i]
+      domains.push(option.value)
+    }
+    return domains
+  }
+  let addSpf = async(domain,source) => {
+    return new Promise((resolve) => {
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST","modules-new/spfrecords/add.php")
+       xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
+        xhr.onload = () => {
+          if (xhr.responseText.includes("alert alert-danger")) {
+            resolve(false)
+          } else {
+            resolve(true)
+          }
+        }
+       xhr.send(new URLSearchParams({
+        Data: source,
+        d_name: domain,
+        B1: "Add" 
+      }).toString())
+    })
+  }
+  // 
   console.log("Enhance vP 1.0");
   let titlePrefix = "cPanel - ";
   let titles = {
@@ -270,7 +298,7 @@ Find out more about Premium Hosting today!
     </h1>
     <p>
   <button type="button" class="btn btn-primary btn-xs" onclick="window.adddns('CNAME')">Add CNAME Record</button>
-  <button type="button" class="btn btn-default btn-xs">Add SPF</button>
+  <button type="button" class="btn btn-default btn-xs" onclick="window.adddns('SPF')">Add SPF</button>
 </p>
     <p><i>Manage your DNS records easily using the industry standard cPanel tool, simply connect to your domain below</i>:
     <div class="alert alert-warning">
@@ -407,9 +435,10 @@ Find out more about Premium Hosting today!
           removeCname(domain)
         }
       }
-      window.adddns = function(type) {
+      window.adddns =async function(type) {
         $("#addrecordmodal").modal("show");
         if (type == "CNAME") {
+          currentlyAddInfo.type = type;
          $("#recordModalBody").html(`
          <div class="form-group">
            <label for="recipient-name" class="control-label">Source</label>
@@ -420,6 +449,28 @@ Find out more about Premium Hosting today!
            <input type="text" class="form-control" placeholder='Enter Data There' id="destination">
          </div>
          `)
+        } else if (type == "SPF") {
+         let data= await getSpfDomains()
+          console.log(data)
+          currentlyAddInfo.type = type;
+          $("#recordModalBody").html(`
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Domain</label>
+            <select id="domain" class="form-control">
+
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Source</label>
+            <input type="text" class="form-control" placeholder='Source' id="source">
+          </div>
+          `)
+          for (let i = 0; i < data.length; i++) {
+            $('#domain').append($('<option>', {
+              value: data[i],
+              text: data[i]
+          }));
+          }
         }
       }
       document.getElementById("dnsLoadingText").innerHTML = `Loading DNS Records.. Loaded ${records.length} DNS Records`;
@@ -440,12 +491,24 @@ Find out more about Premium Hosting today!
           // refresh page
 
           window.location.reload()
-        }
+        }  
       }
-      document.getElementById("ModalAddRecord").onclick = async function(type){
-       if(type == "CNAME") {
-
+      document.getElementById("ModalAddRecord").onclick = async function(){
+        $("#ModalAddRecord").attr("disabled",true)
+       if(currentlyAddInfo.type == "CNAME") {
+           await addCname($("#source").val() + ".",$("#destination").val())
+       }else if (currentlyAddInfo.type == "SPF") {
+       let res = await  addSpf($("#domain").val(),$("#source").val())
+       if (res) {
+         window.location.reload()
+       } else {
+         $("#ModalAddRecord").html("Error")
+         
        }
+       await wait(3000)
+       $("#ModalAddRecord").attr("disabled",false)
+        $("#ModalAddRecord").html("Add")
+    }
       }
       let table = document.getElementById("dns_lists")
       for (let i =0; i < records.length; i++) {
