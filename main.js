@@ -1,3 +1,14 @@
+// ==UserScript==
+// @name         Enhance VP (External Loader)
+// @namespace    https://github.com/ImLoadingUuU/EnhanceVP
+// @version      2023-12-31
+// @description  Enhance VP 
+// @author       You
+// @match        *://cpanel.infinityfree.com/panel/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=infinityfree.com
+// @grant        none
+// @require 
+// ==/UserScript==
 // Module Loader
 function loadJS(FILE_URL, async = true) {
     let scriptEle = document.createElement("script");
