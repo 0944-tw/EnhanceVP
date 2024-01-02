@@ -177,6 +177,7 @@ let spf = {
 };
 let mx = {
     list: async() => {
+        let records = [];
         let mxh5 = await getPage(
             `/panel/indexpl.php?option=mxrecords&ttt=${token}`
           );
