@@ -38,7 +38,7 @@
   wait(1000);
   if (document.URL.includes("option=")) {
     let jquery = document.createElement("script");
-    jquery.src = "https://code.jquery.com/jquery-1.11.3.min.js";
+    jquery.src = "https://code.jquery.com/jquery-1.12.0.min.js";
     document.head.appendChild(jquery);
     // wait for jquery loaded
     console.log("JQuery Missing, Injected");
@@ -47,7 +47,7 @@
     // add bootstrap.js
     let bootstrap = document.createElement("script");
     bootstrap.src =
-      "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js";
+      "https://maxcdn.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js";
     document.head.appendChild(bootstrap);
   } else {
     console.log("JQuery Exists");
@@ -268,6 +268,10 @@ Find out more about Premium Hosting today!
         <span id="icon-simple_zone_editor" class="page-icon icon-simple_zone_editor"></span>
         <span id="pageHeading">DNS</span>
     </h1>
+    <p>
+  <button type="button" class="btn btn-primary btn-xs" onclick="window.adddns('CNAME')">Add CNAME Record</button>
+  <button type="button" class="btn btn-default btn-xs">Add SPF</button>
+</p>
     <p><i>Manage your DNS records easily using the industry standard cPanel tool, simply connect to your domain below</i>:
     <div class="alert alert-warning">
     <span class="glyphicon glyphicon-exclamation-sign"></span>
@@ -291,7 +295,7 @@ Find out more about Premium Hosting today!
 
          </tbody></table>
          <div class="modal fade" id="editrecordmodal" tabindex="-1" role="dialog">
-         <div class="modal-dialog" role="document">
+         <div class="modal-dialog modal-sm" role="document">
            <div class="modal-content">
              <div class="modal-header">
                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -307,9 +311,33 @@ Find out more about Premium Hosting today!
            </div><!-- /.modal-content -->
          </div><!-- /.modal-dialog -->
        </div>
+
+       <!-- Add Record -->
+       <div class="modal fade" id="addrecordmodal" tabindex="-1" role="dialog">
+       <div class="modal-dialog" role="document">
+         <div class="modal-content">
+           <div class="modal-header">
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+             <h4 class="modal-title" id="myModalLabel">Add New Record</h4>
+           </div>
+           <div class="modal-body" id="recordModalBody">
+             ...
+           </div>
+           <div class="modal-footer">
+             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+             <button type="button" class="btn btn-primary" id="ModalAddRecord">Add</button>
+           </div>
+         </div>
+       </div>
+     </div>
         `;
       let records = [];
       let currentlyEditInfo = {
+        type: "",
+        name: "",
+        value: "",
+      }
+      let currentlyAddInfo = {
         type: "",
         name: "",
         value: "",
@@ -366,7 +394,7 @@ Find out more about Premium Hosting today!
         if (type == "CNAME") {
           $("#modalBody").html(`
           <div class="form-group">
-          <label for="recipient-name" class="control-label">${name} New Record:</label>
+          <label for="recipient-name" class="control-label">Edit to</label>
           <input type="text" class="form-control" placeholder='${value}' id="newValue">
         </div>
           `)
@@ -379,13 +407,45 @@ Find out more about Premium Hosting today!
           removeCname(domain)
         }
       }
+      window.adddns = function(type) {
+        $("#addrecordmodal").modal("show");
+        if (type == "CNAME") {
+         $("#recordModalBody").html(`
+         <div class="form-group">
+           <label for="recipient-name" class="control-label">Source</label>
+           <input type="text" class="form-control" placeholder='Enter Data There' id="source">
+         </div>
+         <div class="form-group">
+           <label for="recipient-name" class="control-label">Destination</label>
+           <input type="text" class="form-control" placeholder='Enter Data There' id="destination">
+         </div>
+         `)
+        }
+      }
       document.getElementById("dnsLoadingText").innerHTML = `Loading DNS Records.. Loaded ${records.length} DNS Records`;
       document.getElementById("applyDns").onclick = async function() {
         console.log("Apply DNS")
         if( currentlyEditInfo.type == "CNAME") {
+          $("#applyDns").html("Applying..")
+          // disable
+          $("#applyDns").attr("disabled",true)
+          if(!document.getElementById("newValue").value) {
+            $("#applyDns").html("Please enter new value")
+            return
+          }
           await removeCname(currentlyEditInfo.name)
           await addCname(currentlyEditInfo.name,document.getElementById("newValue").value)
+          $("#applyDns").html("Applied")
+          await wait(1000)
+          // refresh page
+
+          window.location.reload()
         }
+      }
+      document.getElementById("ModalAddRecord").onclick = async function(type){
+       if(type == "CNAME") {
+
+       }
       }
       let table = document.getElementById("dns_lists")
       for (let i =0; i < records.length; i++) {
