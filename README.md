@@ -6,6 +6,16 @@ A JavaScript Code That Improve VistaPanel Page
 - PHP Info (WIP)
 - PHP Configuration Editor
 
+
+## Build this project
+```sh
+npm install
+```
+```sh
+webpack
+```
+## Release
+Use at `dist/main.user.js`
 # vp.js
 vp.js is a library could control vistapanel by js in browser
 
