@@ -195,7 +195,42 @@ let mx = {
             records.push(row);
           }
           return records;
+    },
+    add: async(domain,priority,data) => {
+      return new Promise((resolve,reject) => {
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST","modules-new/mxrecords/add.php");
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onload = () => {
+          if(xhr.responseText.includes("alert alert-danger")){
+            resolve(false);
+          }else{
+            resolve(true);
+          }
+        }
+        xhr.send(new URLSearchParams({
+          d_name: domain,
+          priority: priority,
+          Data: data,
+          B1: "Add"
+        }).toString())
+      })
+    },
+    remove: async(domain,priority,data) => {
+    const page = await getPage(`/panel/indexpl.php?option=mxrecords&ttt=${token}`);
+    const json = tableToJson(page.querySelectorAll("#sql_db_tbl")[1]);
+    for(let i = 0; i < json.length; i++){
+      let row = json[i];
+      if(row.domain == domain && row.priority == priority && row.mxrecord == data){
+        let rowElement = page.querySelectorAll("#sql_db_tbl")[1].getElementsByTagName("tr")[i + 1];
+        let btn = rowElement.querySelector(".btn").href;
+        await getPage(btn);
+        return true;
+      }else{
+        continue;
+      }
     }
+  }
 };
 
 window.vpapi = {
@@ -203,3 +238,4 @@ window.vpapi = {
     spf,
     mx
 }
+
