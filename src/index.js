@@ -11,6 +11,10 @@
 
 (async function () {
   "use strict";
+  //
+  if(PAGE.appGroups) {
+    require("./elementchanger.js")
+  };
   // add bootstrap.js loader
   // check bootstrap.js exists
   function waitLoad(element) {
@@ -36,6 +40,7 @@
  `
   document.head.appendChild(style);
   wait(1000);
+   
   if (document.URL.includes("option=")) {
     let jquery = document.createElement("script");
     jquery.src = "https://code.jquery.com/jquery-1.12.0.min.js";

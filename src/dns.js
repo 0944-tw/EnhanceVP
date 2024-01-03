@@ -142,6 +142,8 @@
     if (type == "CNAME") {
       console.log(`Remove CNAME ${domain} `);
       vpapi.cname.remove(domain);
+    } else if (type == "MX") {
+       vpapi.mx.remove(domain,currentlyEditInfo.value.priority,currentlyEditInfo.value.destination);
     }
   };
   document.adddns = async function (type) {
