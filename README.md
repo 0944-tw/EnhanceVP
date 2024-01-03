@@ -1,9 +1,9 @@
 # EnhanceVP
 A JavaScript Code That Improve VistaPanel Page
 
-[<kbd> <br> Install as Userscript <br> </kbd>][https://github.com/ImLoadingUuU/EnhanceVP/blob/main/dist/main.user.js]
+[Link]: # 'Link with example title.'
+[![Button Example]][Link]
 
-[<kbd> <br> Get Lateset <br> </kbd>][https://github.com/ImLoadingUuU/EnhanceVP/blob/main/dist/main.user.js]
 ## Features
 - CNAME --> DNS
 - Domains,Subdomain,Parked --> Domains (WIP)
