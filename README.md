@@ -1,8 +1,6 @@
 # EnhanceVP
 A JavaScript Code That Improve VistaPanel Page
 
-[Link]: # 'Link with example title.'
-[![Button Example]][Link]
 
 ## Features
 - CNAME --> DNS
