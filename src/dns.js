@@ -184,6 +184,22 @@
           })
         );
       }
+    } else if (type == "MX") {
+      currentlyAddInfo.type = type;
+      $("#recordModalBody").html(`
+      <div class="form-group">
+        <label for="recipient-name" class="control-label">Domain</label>
+        <input type="text" class="form-control" placeholder='Enter Data There' id="Domain">
+      </div>
+      <div class="form-group">
+        <label for="recipient-name" class="control-label">MX Record</label>
+        <input type="text" class="form-control" placeholder='Enter Data There' id="MXRecord">
+      </div>
+      <div class="form-group">
+      <label for="recipient-name" class="control-label">Priority</label>
+      <input type="text" class="form-control" placeholder='10' id="Priority">
+    </div>
+      `);
     }
   };
   document.getElementById(

@@ -243,7 +243,51 @@ let mx = {
     }
   }
 };
+let sql = {
+  add: async (dbname) => {
+    return new Promise((resolve) => {
+      let xhr = new XMLHttpRequest()
+    xhr.open("POST","/panel/indexpl.php?option=mysql&cmd=create")
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = () => {
+      let result = new DOMParser().parseFromString(xhr.responseText,"text/html")
+      if (result.querySelector("#sql_db_tbl")) {
+        resolve(true)
+        return
+      }
+      result.querySelector('.formbox div.highlight').remove();
+      result.querySelector("#hdrCreateDb").remove();
+      let error = result.querySelector('.formbox').innerText
 
+      resolve(false,error)
+    }
+    xhr.send(new URLSearchParams({
+      db: dbname
+    }))
+    })
+  },
+  remove: async (dbname) => {
+    let xhr = new XMLHttpRequest()
+    xhr.open("POST","/panel/indexpl.php?option=mysql&cmd=remove")
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = () => {
+      let result = new DOMParser().parseFromString(xhr.responseText,"text/html")
+      if (result.querySelector("#sql_db_tbl")) {
+        resolve(true)
+        return
+      }
+      result.querySelector('.formbox div.highlight').remove();
+      result.querySelector("#hdrCreateDb").remove();
+      let error = result.querySelector('.formbox').innerText
+      resolve(false,error)
+    }
+    xhr.send(new URLSearchParams({
+      toremove: dbname,
+      Submit2: "Remove Database"
+    }))
+    
+  }
+}
 window.vpapi = {
     cname,
     spf,
